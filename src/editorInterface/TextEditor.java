@@ -7,20 +7,28 @@ import javax.swing.JFrame;
 import java.awt.BorderLayout;
 
 import javax.swing.JEditorPane;
+import javax.swing.JFileChooser;
 import javax.swing.JMenuBar;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.JSeparator;
 import javax.swing.JTabbedPane;
 import javax.swing.KeyStroke;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
+
 import java.awt.event.KeyEvent;
 import java.awt.event.InputEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
+import java.io.File;
 
 public class TextEditor {
 
 	private JFrame frmTexteditor;
+	private JEditorPane defaultEditorPane = new JEditorPane();
+	private OpenTabs activeTabs = new OpenTabs();
+	private JTabbedPane tabbedPane;
 
 	/**
 	 * Launch the application.
@@ -87,6 +95,15 @@ public class TextEditor {
 		mntmSave.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_S, InputEvent.CTRL_MASK));
 		mnFile.add(mntmSave);
 		
+		JMenuItem mntmSaveAs = new JMenuItem("Save As");
+		mntmSaveAs.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				saveFileAs();
+			}
+		});
+		mntmSaveAs.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_S, InputEvent.CTRL_MASK | InputEvent.ALT_MASK));
+		mnFile.add(mntmSaveAs);
+		
 		JMenuItem mntmClose = new JMenuItem("Close", KeyEvent.VK_W);
 		mntmClose.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
@@ -107,15 +124,57 @@ public class TextEditor {
 		});
 		mnFile.add(mntmExit);
 		
-		JTabbedPane tabbedPane = new JTabbedPane(JTabbedPane.TOP);
-		frmTexteditor.getContentPane().add(tabbedPane, BorderLayout.CENTER);
+		tabbedPane = new JTabbedPane(JTabbedPane.TOP);
+		tabbedPane.addChangeListener(tabChangeListener);
 		
-		JEditorPane dtrpnEditorText = new JEditorPane();
-		tabbedPane.addTab("New tab", null, dtrpnEditorText, null);
+		frmTexteditor.getContentPane().add(tabbedPane, BorderLayout.CENTER);
+		tabbedPane.addTab("New tab", null, defaultEditorPane, null);
 	}
+
+	ChangeListener tabChangeListener = new ChangeListener() {
+		public void stateChanged(ChangeEvent changeEvent) {
+			JTabbedPane sourceTabbedPane = (JTabbedPane) changeEvent.getSource();
+			int index = sourceTabbedPane.getSelectedIndex();
+
+			if ((index >= 0) && (index <= activeTabs.getSize())) {
+				activeTabs.setCurrentIndex(index);
+			} else {
+				activeTabs.setCurrentIndex(0);
+			}
+			
+			System.out.println(activeTabs.getCurrentIndex());
+		}
+	};
 	
 	private void openFile() {
-		System.out.println("Open File");
+		
+		final JFileChooser fileChooser = new JFileChooser();
+		int returnVal = fileChooser.showOpenDialog(frmTexteditor);
+
+		// Select the file to open
+		if (returnVal == JFileChooser.APPROVE_OPTION) {
+			//Select, open, and read file
+			File file = fileChooser.getSelectedFile();
+			activeTabs.OpenTextTab(file);
+
+			// Remove default New Tab
+			if ((tabbedPane.getTabCount() == 1) && (tabbedPane.indexOfComponent(defaultEditorPane) ==  0)) {
+				tabbedPane.remove(0);
+			}
+			
+			// Add the new tab to the tab pane
+			tabbedPane.addTab(file.getName(), null, activeTabs.activeTab().getEditorPane(), null);
+			tabbedPane.setSelectedComponent(activeTabs.activeTab().getEditorPane());
+			
+		} else {
+			System.out.println("File Open prompt cancelled by user.");
+		}
+		
+		// Open the file
+		
+		
+		// Read file contents into editor window
+		
 	}
 	
 	private void closeFile() {
@@ -128,6 +187,10 @@ public class TextEditor {
 	
 	private void saveFile() {
 		System.out.println("Save File");
+	}
+	
+	private void saveFileAs() {
+		System.out.println("Save File As");
 	}
 	
 	private void exitProgram() {
