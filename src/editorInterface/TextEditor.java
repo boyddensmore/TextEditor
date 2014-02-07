@@ -6,7 +6,6 @@ import javax.swing.JFrame;
 
 import java.awt.BorderLayout;
 
-import javax.swing.JEditorPane;
 import javax.swing.JFileChooser;
 import javax.swing.JMenuBar;
 import javax.swing.JMenu;
@@ -26,7 +25,7 @@ import java.io.File;
 public class TextEditor {
 
 	private JFrame frmTexteditor;
-	private JEditorPane defaultEditorPane = new JEditorPane();
+	//private JEditorPane defaultEditorPane = new JEditorPane();
 	private OpenTabs activeTabs = new OpenTabs();
 	private JTabbedPane tabbedPane;
 	final JFileChooser fileChooser = new JFileChooser(System.getProperty("user.dir"));
@@ -127,9 +126,9 @@ public class TextEditor {
 		
 		tabbedPane = new JTabbedPane(JTabbedPane.TOP);
 		tabbedPane.addChangeListener(tabChangeListener);
-		
 		frmTexteditor.getContentPane().add(tabbedPane, BorderLayout.CENTER);
-		tabbedPane.addTab("New tab", null, defaultEditorPane, null);
+		
+		tabbedPane.addTab("New tab", null, activeTabs.newTab().getEditorPane(), null);
 	}
 
 	ChangeListener tabChangeListener = new ChangeListener() {
@@ -155,8 +154,10 @@ public class TextEditor {
 			File file = fileChooser.getSelectedFile();
 			activeTabs.OpenTextTab(file);
 
-			// Remove default New Tab
-			if ((tabbedPane.getTabCount() == 1) && (tabbedPane.indexOfComponent(defaultEditorPane) ==  0)) {
+			System.out.println(tabbedPane.getTitleAt(0));
+			
+			// If there is only one tab, and that tab is New Tab, remove it.
+			if ((tabbedPane.getTabCount() == 1) && (tabbedPane.getTitleAt(0) ==  "New tab")) {
 				tabbedPane.remove(0);
 			}
 			
@@ -184,7 +185,30 @@ public class TextEditor {
 	}
 	
 	private void saveFile() {
-		activeTabs.saveTab(activeTabs.getCurrentIndex());
+		
+		
+		if ((tabbedPane.getTabCount() == 1) && (tabbedPane.getTitleAt(0) ==  "New tab")) {
+			System.out.println("Selected tab is New Tab, saving as New");
+			
+			int returnVal = fileChooser.showSaveDialog(frmTexteditor);
+
+			// Select the file to open
+			if (returnVal == JFileChooser.APPROVE_OPTION) {
+				//Select, open, and read file
+				File file = fileChooser.getSelectedFile();
+				// TODO - Check to see if the file exists before writing!
+				// TODO - Check to make sure the filename is valid!
+				
+				tabbedPane.setTitleAt(0, file.getName());
+				
+				activeTabs.saveTabAs(0, file);
+			} else {
+				System.out.println("File Open prompt cancelled by user.");
+			}
+		} else {
+			activeTabs.saveTab(activeTabs.getCurrentIndex());
+		}
+		
 		System.out.println("Save File");
 	}
 	
@@ -194,5 +218,6 @@ public class TextEditor {
 	
 	private void exitProgram() {
 		System.out.println("Exit Program");
+		System.exit(0);
 	}
 }

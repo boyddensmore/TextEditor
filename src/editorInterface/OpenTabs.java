@@ -5,6 +5,7 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
+import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
@@ -24,6 +25,13 @@ public class OpenTabs {
 		private Document document;
 		private JEditorPane editorPane;
 		private Boolean editedFlag = false;
+		
+		public TextTab() {
+			editorPane = new JEditorPane();
+			document = editorPane.getDocument();
+			
+			document.addDocumentListener(new documentChangeListener());
+		}
 		
 		public TextTab(File newFile) {
 			editorPane = new JEditorPane();
@@ -96,7 +104,7 @@ public class OpenTabs {
 			}
 		}
 		
-		public void writeToDisk(){
+		public void writeToDisk() {
 			Charset charset = Charset.forName("US-ASCII");
 			try (BufferedWriter fileWriter = Files.newBufferedWriter(file.toPath(), charset)) {
 				//fileWriter.write(document.getText(0, document.getLength()));
@@ -104,14 +112,23 @@ public class OpenTabs {
 				this.editedFlag = false;
 				
 			}catch (IOException e) {
-				System.err.format("IOExceptionL %s%n", e);
+				System.err.format("IOException: %s%n", e);
 			}
 			
 		}
-	}
 		
-	public void OpenTextTab(File file) {
-		openTxtTabs.add(this.new TextTab(file));
+		public void writeToDisk(File outputFile) {
+			Charset charset = Charset.forName("US-ASCII");
+			try (BufferedWriter fileWriter = Files.newBufferedWriter(outputFile.toPath(), charset)) {
+				//fileWriter.write(document.getText(0, document.getLength()));
+				editorPane.write(fileWriter);
+				this.editedFlag = false;
+				
+			}catch (IOException e) {
+				System.err.format("IOException: %s%n", e);
+			}
+			
+		}
 	}
 	
 	public int getCurrentIndex() {
@@ -146,11 +163,24 @@ public class OpenTabs {
 		openTxtTabs.remove(getActiveTab());
 	}
 	
+	public void OpenTextTab(File file) {
+		openTxtTabs.add(this.new TextTab(file));
+	}
+		
 	public void saveTab(int tabNumber) {
-		// TODO - Should Save-As if there's no current file. Core functionality to open, type, save as new
 		if ((tabNumber >= 0) && (tabNumber < openTxtTabs.size())) {
 			openTxtTabs.get(tabNumber).writeToDisk();
 		}
+	}
+	
+	public void saveTabAs(int tabNumber, File outputFile) {
+		if ((tabNumber >= 0) && (tabNumber < openTxtTabs.size())) {
+			openTxtTabs.get(tabNumber).writeToDisk(outputFile);
+		}
+	}
+
+	public TextTab newTab() {
+		return new TextTab();
 	}
 	
 	public int getSize() {
