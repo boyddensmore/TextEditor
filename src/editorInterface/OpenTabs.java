@@ -147,6 +147,7 @@ public class OpenTabs {
 	}
 	
 	public void saveTab(int tabNumber) {
+		// TODO - Should Save-As if there's no current file. Core functionality to open, type, save as new
 		if ((tabNumber >= 0) && (tabNumber < openTxtTabs.size())) {
 			openTxtTabs.get(tabNumber).writeToDisk();
 		}
