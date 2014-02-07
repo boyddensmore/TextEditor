@@ -29,7 +29,8 @@ public class TextEditor {
 	private JEditorPane defaultEditorPane = new JEditorPane();
 	private OpenTabs activeTabs = new OpenTabs();
 	private JTabbedPane tabbedPane;
-
+	final JFileChooser fileChooser = new JFileChooser(System.getProperty("user.dir"));
+	
 	/**
 	 * Launch the application.
 	 */
@@ -141,14 +142,11 @@ public class TextEditor {
 			} else {
 				activeTabs.setCurrentIndex(0);
 			}
-			
-			System.out.println(activeTabs.getCurrentIndex());
 		}
 	};
 	
 	private void openFile() {
 		
-		final JFileChooser fileChooser = new JFileChooser();
 		int returnVal = fileChooser.showOpenDialog(frmTexteditor);
 
 		// Select the file to open
@@ -163,8 +161,8 @@ public class TextEditor {
 			}
 			
 			// Add the new tab to the tab pane
-			tabbedPane.addTab(file.getName(), null, activeTabs.activeTab().getEditorPane(), null);
-			tabbedPane.setSelectedComponent(activeTabs.activeTab().getEditorPane());
+			tabbedPane.addTab(file.getName(), null, activeTabs.getActiveTab().getEditorPane(), null);
+			tabbedPane.setSelectedComponent(activeTabs.getActiveTab().getEditorPane());
 			
 		} else {
 			System.out.println("File Open prompt cancelled by user.");
@@ -186,6 +184,7 @@ public class TextEditor {
 	}
 	
 	private void saveFile() {
+		activeTabs.saveTab(activeTabs.getCurrentIndex());
 		System.out.println("Save File");
 	}
 	

@@ -10,6 +10,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import javax.swing.JEditorPane;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 
@@ -21,11 +23,37 @@ public class OpenTabs {
 		private File file;
 		private Document document;
 		private JEditorPane editorPane;
+		private Boolean editedFlag = false;
 		
 		public TextTab(File newFile) {
 			editorPane = new JEditorPane();
 			document = editorPane.getDocument();
 			setFile(newFile);
+			readFromDisk();
+			
+			document.addDocumentListener(new documentChangeListener());
+		}
+		
+		class documentChangeListener implements DocumentListener {
+		    public void insertUpdate(DocumentEvent e) {
+		        System.out.println("inserted into: " + e);
+		        TextTab.this.setEditedFlag(true);
+		    }
+		    public void removeUpdate(DocumentEvent e) {
+		    	System.out.println("removed from: " + e);
+		    	TextTab.this.setEditedFlag(true);
+		    }
+		    public void changedUpdate(DocumentEvent e) {
+		        //Plain text components do not fire these events
+		    }
+		}
+		
+		public Boolean getEditedFlag() {
+			return editedFlag;
+		}
+		
+		public void setEditedFlag(Boolean newFlag) {
+			editedFlag = newFlag;
 		}
 		
 		public File getFile(){
@@ -54,11 +82,14 @@ public class OpenTabs {
 		
 		public void readFromDisk() {
 			Charset charset = Charset.forName("US-ASCII");
+			
+			System.out.println("Reading File!");
 			try (BufferedReader fileReader = Files.newBufferedReader(file.toPath(), charset)) {
 				String line = null;
 			    while ((line = fileReader.readLine()) != null) {
 			    	appendToDocument(line+"\n");
 			    }
+			    this.editedFlag = false;
 			} catch (IOException e) {
 				System.err.format("IOExceptionL %s%n", e);
 				appendToDocument("There was an error opening the file!" + "\n" + "Please ensure the file you're opening is a Text file.");
@@ -68,7 +99,10 @@ public class OpenTabs {
 		public void writeToDisk(){
 			Charset charset = Charset.forName("US-ASCII");
 			try (BufferedWriter fileWriter = Files.newBufferedWriter(file.toPath(), charset)) {
-				fileWriter.write(document.toString());
+				//fileWriter.write(document.getText(0, document.getLength()));
+				editorPane.write(fileWriter);
+				this.editedFlag = false;
+				
 			}catch (IOException e) {
 				System.err.format("IOExceptionL %s%n", e);
 			}
@@ -88,11 +122,11 @@ public class OpenTabs {
 		currentIndex = newIndex;
 	}
 	
-	public TextTab activeTab() {
+	public TextTab getActiveTab() {
 		return openTxtTabs.get(getCurrentIndex());
 	}
 	
-	public TextTab previousTab() {
+	public TextTab getPreviousTab() {
 		if (getCurrentIndex() > 0) {
 			return openTxtTabs.get(getCurrentIndex() - 1);
 		} else {
@@ -100,7 +134,7 @@ public class OpenTabs {
 		}
 	}
 	
-	public TextTab nextTab() {
+	public TextTab getNextTab() {
 		if (getCurrentIndex() < openTxtTabs.size()) {
 			return openTxtTabs.get(getCurrentIndex() + 1);
 		} else {
@@ -109,12 +143,16 @@ public class OpenTabs {
 	}
 	
 	public void closeCurrentTab() {
-		openTxtTabs.remove(activeTab());
+		openTxtTabs.remove(getActiveTab());
+	}
+	
+	public void saveTab(int tabNumber) {
+		if ((tabNumber >= 0) && (tabNumber < openTxtTabs.size())) {
+			openTxtTabs.get(tabNumber).writeToDisk();
+		}
 	}
 	
 	public int getSize() {
 		return openTxtTabs.size();
 	}
-	
-	//TODO - Add TextTab destructor handling
 }

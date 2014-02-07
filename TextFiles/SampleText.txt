@@ -1,3 +1,6 @@
-This is a sample file.
+This is a line of text!
 
-It has a couple of lines, but doesn't really say anything!
+And here's another, for good measure.
+
+And a third line!
+And a fourth.
