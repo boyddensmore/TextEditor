@@ -196,8 +196,6 @@ public class TextEditor {
 			if (returnVal == JFileChooser.APPROVE_OPTION) {
 				//Select, open, and read file
 				File file = fileChooser.getSelectedFile();
-				// TODO - Check to see if the file exists before writing!
-				// TODO - Check to make sure the filename is valid!
 				
 				tabbedPane.setTitleAt(0, file.getName());
 				
