@@ -153,8 +153,6 @@ public class TextEditor {
 			//Select, open, and read file
 			File file = fileChooser.getSelectedFile();
 			activeTabs.OpenTextTab(file);
-
-			System.out.println(tabbedPane.getTitleAt(0));
 			
 			// If there is only one tab, and that tab is New Tab, remove it.
 			if ((tabbedPane.getTabCount() == 1) && (tabbedPane.getTitleAt(0) ==  "New tab")) {

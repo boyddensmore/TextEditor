@@ -165,6 +165,7 @@ public class OpenTabs {
 	
 	public void OpenTextTab(File file) {
 		openTxtTabs.add(this.new TextTab(file));
+		setCurrentIndex(openTxtTabs.size()-1);
 	}
 		
 	public void saveTab(int tabNumber) {

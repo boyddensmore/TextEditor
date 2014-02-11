@@ -1,4 +1,4 @@
-SampleText Copy
+SampleText Copy.txt
 
 This is a line of text!
 

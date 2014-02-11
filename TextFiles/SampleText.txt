@@ -1,4 +1,4 @@
-SampleText
+SampleText.txt
 
 And here's another, for good measure.
 
